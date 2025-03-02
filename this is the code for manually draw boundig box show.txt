@@ -1,0 +1,108 @@
+#This script helps visualize detected objects from YOLO-style annotation files! 🚀
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the image
+image_path = "/content/0001_042.jpg"
+image = cv2.imread(image_path)
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB for correct display
+####Reads the image from "0001_042.jpg".Converts it from BGR (OpenCV default) to RGB for correct display.
+# Read bounding box from the text file
+txt_path = "/content/0001_042.txt"
+
+with open(txt_path, "r") as file:
+    data = file.readline().strip().split()
+
+# Extract normalized coordinates
+_, x_center, y_center, width, height = map(float, data)
+####Extracts values: class_id, x_center, y_center, width, height (YOLO format, all values are normalized between 0-1).
+
+# Convert normalized coordinates to pixel values
+img_height, img_width, _ = image.shape
+x_center *= img_width
+y_center *= img_height
+width *= img_width
+height *= img_height
+####Multiplies normalized values by the image dimensions to get actual pixel values.
+
+# Calculate bounding box corners
+x1 = int(x_center - width / 2)
+y1 = int(y_center - height / 2)
+x2 = int(x_center + width / 2)
+y2 = int(y_center + height / 2)
+####Calculates the top-left (x1, y1) and bottom-right (x2, y2) coordinates of the bounding box.
+
+
+# Draw the bounding box
+cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 3)  # Blue rectangle
+####Uses cv2.rectangle() to draw a blue box (color: (255, 0, 0), thickness: 3).
+
+
+# Display the image with bounding box
+plt.figure(figsize=(8, 6))
+plt.imshow(image)
+plt.axis("off")
+plt.show()
+####Uses matplotlib.pyplot to show the image with the bounding box, removing axes for a clean display.
+
+
+
+
+
+
+
+
+this is the code to draw the bounding box manually using Pillow....
+
+
+from PIL import Image, ImageDraw  #import the pillow library..
+
+# Load the image
+image = Image.open("/content/02_005.jpg")
+image_width, image_height = image.size  # Get image dimensions
+
+# Path to the text file containing the normalized YOLO coordinates
+txt_path = "/content/02_005.txt"
+
+# Open and read the coordinates from the text file
+with open(txt_path, "r") as file:
+    lines = file.readlines()  #this will read the co-ordinates line by line..
+
+# Create a drawing context
+draw = ImageDraw.Draw(image)  #getting the reference of the object for the image in the memory..
+
+# Loop through each line in the file and extract the coordinates
+for line in lines:
+    # Split the line into values (class label, x_center, y_center, width, height !!!BY DEFAULT FOR YOLO)
+    data = line.strip().split()
+    
+    # Extract the coordinates and convert them to floats
+    class_id = int(data[0])  # Class ID (not used in drawing, but you can use it for color or label)
+    x_center, y_center, width, height = map(float, data[1:])
+    
+    # Convert normalized coordinates to pixel values
+    x1 = (x_center - width / 2) * image_width
+    y1 = (y_center - height / 2) * image_height
+    x2 = (x_center + width / 2) * image_width
+    y2 = (y_center + height / 2) * image_height
+    
+    # Define the rectangle (as a polygon)
+    coordinates = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+    
+    # Draw the rectangle (polygon) on the image
+    draw.polygon(coordinates, outline="black", fill=None)  # You can change "red" to other colors
+
+# Show the image with all plotted coordinates
+image.show()
+
+# Optionally, save the image with the plotted coordinates
+image.save("/content/sample_data.jpg")
+
+
+
+
+
+
+
+
